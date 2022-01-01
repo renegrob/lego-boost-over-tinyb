@@ -1,7 +1,7 @@
-package com.github.renegrob.lwp.peripheral;
+package io.github.renegrob.movehub.peripheral;
 
-import com.github.renegrob.lwp.MoveHub;
-import com.github.renegrob.lwp.message.PortOutputCommand;
+import io.github.renegrob.movehub.MoveHub;
+import io.github.renegrob.movehub.message.PortOutputCommand;
 
 public class Led extends Peripheral {
 

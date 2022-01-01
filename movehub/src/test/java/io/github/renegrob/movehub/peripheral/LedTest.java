@@ -1,11 +1,11 @@
-package com.github.renegrob.lwp.peripheral;
+package io.github.renegrob.movehub.peripheral;
 
 import com.google.common.primitives.Bytes;
 import org.junit.jupiter.api.Test;
 
-import static com.github.renegrob.lwp.Util.toHex;
-import static com.github.renegrob.lwp.peripheral.Peripheral.PORT_LED;
-import static com.github.renegrob.lwp.peripheral.Peripheral.WRITE_DIRECT_MODE_DATA;
+import static io.github.renegrob.movehub.Util.toHex;
+import static io.github.renegrob.movehub.peripheral.Peripheral.PORT_LED;
+import static io.github.renegrob.movehub.peripheral.Peripheral.WRITE_DIRECT_MODE_DATA;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class LedTest {

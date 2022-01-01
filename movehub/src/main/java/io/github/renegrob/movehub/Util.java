@@ -1,4 +1,4 @@
-package com.github.renegrob.lwp;
+package io.github.renegrob.movehub;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;

@@ -1,9 +1,9 @@
-package com.github.renegrob.lwp;
+package io.github.renegrob.movehub;
 
-import com.github.renegrob.lwp.message.LWPMessage;
-import com.github.renegrob.lwp.peripheral.Led;
-import com.github.renegrob.lwp.peripheral.Motor;
-import com.github.renegrob.lwp.peripheral.Peripheral;
+import io.github.renegrob.movehub.message.LWPMessage;
+import io.github.renegrob.movehub.peripheral.Peripheral;
+import io.github.renegrob.movehub.peripheral.Led;
+import io.github.renegrob.movehub.peripheral.Motor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tinyb.*;
@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
-import static com.github.renegrob.lwp.Util.toHex;
+import static io.github.renegrob.movehub.Util.toHex;
 import static java.util.Objects.requireNonNull;
 
 public class MoveHub implements AutoCloseable {

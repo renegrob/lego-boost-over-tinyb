@@ -1,6 +1,6 @@
-package com.github.renegrob.lwp.peripheral;
+package io.github.renegrob.movehub.peripheral;
 
-import com.github.renegrob.lwp.MoveHub;
+import io.github.renegrob.movehub.MoveHub;
 
 public abstract class Peripheral {
 

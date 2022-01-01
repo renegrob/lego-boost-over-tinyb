@@ -1,17 +1,10 @@
-package com.github.renegrob.lwp.peripheral;
+package io.github.renegrob.movehub.peripheral;
 
-import com.github.renegrob.lwp.MoveHub;
-import com.github.renegrob.lwp.Util;
-import com.github.renegrob.lwp.message.PortOutputCommand;
-import com.google.common.base.Preconditions;
-import com.google.common.primitives.Bytes;
-import com.google.common.primitives.Ints;
-import org.checkerframework.checker.units.qual.Speed;
+import io.github.renegrob.movehub.MoveHub;
+import io.github.renegrob.movehub.message.PortOutputCommand;
 
-import javax.management.remote.rmi.RMIJRMPServerImpl;
-
-import static com.github.renegrob.lwp.Util.b;
-import static com.github.renegrob.lwp.Util.checkRange;
+import static io.github.renegrob.movehub.Util.b;
+import static io.github.renegrob.movehub.Util.checkRange;
 
 public class Motor extends Peripheral {
 

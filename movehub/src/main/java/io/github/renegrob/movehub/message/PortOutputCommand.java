@@ -1,4 +1,4 @@
-package com.github.renegrob.lwp.message;
+package io.github.renegrob.movehub.message;
 
 import com.google.common.primitives.Bytes;
 
