@@ -12,6 +12,7 @@ import tinyb.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,6 +23,12 @@ public class MyApp implements Runnable {
     private BluetoothManager bluetoothManager;
     private MoveHub moveHub;
     private JFrame frame;
+
+    static {
+        // LD_LIBRRARY_PATH
+        //-Djava.library.path=/NATIVE_SHARED_LIB_FOLDER
+        System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator + "/opt/tinyb/lib");
+    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new MyApp());
@@ -78,7 +85,7 @@ public class MyApp implements Runnable {
         );
         frame.pack();
         frame.setVisible(true);
-        SwingUtilities.invokeLater(() -> lazyInit());
+        SwingUtilities.invokeLater(this::lazyInit);
     }
 
     public void lazyInit() {
@@ -91,16 +98,16 @@ public class MyApp implements Runnable {
         List<BluetoothDevice> devices = bluetoothManager.getDevices();
         for (BluetoothDevice device : devices) {
             LOG.info(device.getAddress() + ", name: " + device.getName() + ", alias: " + device.getAlias());
-            LOG.info("  service data: " + device.getServiceData());
-            for (BluetoothGattService service : device.getServices()) {
-                LOG.info("- " + service.getUUID() + ": " + service.getBluetoothType());
-                for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-                    LOG.info("  -  " + characteristic.getUUID() + ": " + characteristic.getBluetoothType());
-                    for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
-                        LOG.info("    - " + descriptor.getUUID() + ": " + descriptor.getBluetoothType());
-                    }
-                }
-            }
+//            LOG.info("  service data: " + device.getServiceData());
+//            for (BluetoothGattService service : device.getServices()) {
+//                LOG.info("- " + service.getUUID() + ": " + service.getBluetoothType());
+//                for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+//                    LOG.info("  -  " + characteristic.getUUID() + ": " + characteristic.getBluetoothType());
+//                    for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
+//                        LOG.info("    - " + descriptor.getUUID() + ": " + descriptor.getBluetoothType());
+//                    }
+//                }
+//            }
             if (Objects.equals(device.getName(), MoveHub.DEVICE_NAME)) {
                 moveHub = new MoveHub(device);
             }
@@ -118,6 +125,12 @@ public class MyApp implements Runnable {
                 LOG.error(e, e);
                 JOptionPane.showMessageDialog(frame, e.toString(), "Error", JOptionPane.ERROR_MESSAGE);
             }
+
+            moveHub.motorA().subscribeNotifications();
+
+            //        motorA().setAccTime(2000);
+//        motorA().setDecTime(2000);
+//        motorA().startSpeedForDegrees(720, 100, 100, Motor.EndState.FLOAT, 3);
         }
     }
 }

@@ -1,9 +1,14 @@
 package io.github.renegrob.movehub;
 
-import io.github.renegrob.movehub.message.LWPMessage;
-import io.github.renegrob.movehub.peripheral.Peripheral;
+import io.github.renegrob.movehub.message.*;
+import io.github.renegrob.movehub.message.event.HubAttachedIOEvent;
+import io.github.renegrob.movehub.message.event.PortValueSingle;
 import io.github.renegrob.movehub.peripheral.Led;
 import io.github.renegrob.movehub.peripheral.Motor;
+import io.github.renegrob.movehub.peripheral.Peripheral;
+import io.github.renegrob.movehub.peripheral.event.PeripheralAttachedEvent;
+import io.github.renegrob.movehub.peripheral.event.PeripheralDetachedEvent;
+import io.github.renegrob.movehub.peripheral.event.PeripheralEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tinyb.*;
@@ -13,6 +18,9 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import static io.github.renegrob.movehub.Util.toHex;
+import static io.github.renegrob.movehub.message.IOTypeID.EXTERNAL_MOTOR_WITH_TACHO;
+import static io.github.renegrob.movehub.message.MessageType.HUB_ATTACHED_IO;
+import static io.github.renegrob.movehub.message.MessageType.PORT_VALUE_SINGLE;
 import static java.util.Objects.requireNonNull;
 
 public class MoveHub implements AutoCloseable {
@@ -27,6 +35,8 @@ public class MoveHub implements AutoCloseable {
     private final Motor motorA;
     private final Motor motorB;
     private final Motor motorAB;
+    private volatile Peripheral portC;
+    private volatile Peripheral portD;
 
     // LWP3_HUB_SERVICE_UUID
     private static final UUID LEGO_HUB_SERVICE = UUID.fromString("00001623-1212-EFDE-1623-785FEABCD123");
@@ -51,30 +61,79 @@ public class MoveHub implements AutoCloseable {
             throw new IOException("Could not connect to " + toString(device));
         }
 
-        for (BluetoothGattService service : device.getServices()) {
-            LOG.info("- " + service.getUUID() + ": " + service.getBluetoothType());
-            for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-                LOG.info("  -  " + characteristic.getUUID() + ": " + characteristic.getBluetoothType() + ": " + Arrays.toString(characteristic.getFlags()));
-                for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
-                    LOG.info("    - " + descriptor.getUUID() + ": " + descriptor.getBluetoothType());
-                }
-            }
-        }
+        dumpDebugInfo();
 
         this.legoHubService = device.getServices().stream()
                 .filter(bluetoothGattService -> UUID.fromString(bluetoothGattService.getUUID()).equals(LEGO_HUB_SERVICE))
                 .findAny()
                 .orElseThrow(() -> new IOException("Did not find LEGO_HUB_SERVICE: " + LEGO_HUB_SERVICE));
 
-
         this.legoHubCharacteristics =  legoHubService.getCharacteristics().stream()
                 .filter(characteristic -> UUID.fromString(characteristic.getUUID()).equals(LEGO_HUB_CHARACTERISTIC))
                 .findAny()
                 .orElseThrow(() -> new IOException("Did not find LEGO_HUB_CHARACTERISTIC: " + LEGO_HUB_CHARACTERISTIC));
 
-        motorA().setAccTime(2000);
-        motorA().setDecTime(2000);
-        motorA().startSpeedForDegrees(720, 100, 100, Motor.EndState.FLOAT, 3);
+
+        legoHubCharacteristics.enableValueNotifications(this::onNotification);
+    }
+
+    private void dumpDebugInfo() {
+        for (BluetoothGattService service : device.getServices()) {
+            LOG.debug("- " + service.getUUID() + ": " + service.getBluetoothType());
+            for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+                LOG.debug("  -  " + characteristic.getUUID() + ": " + characteristic.getBluetoothType() + ": " + Arrays.toString(characteristic.getFlags()));
+                for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
+                    LOG.debug("    - " + descriptor.getUUID() + ": " + descriptor.getBluetoothType());
+                }
+            }
+        }
+    }
+
+    private void onNotification(byte[] bytes) {
+        LOG.info("onNotification {}", toHex(bytes));
+        LWPUpstreamMessage message = LWPUpstreamMessage.parseMessage(bytes);
+
+        if (message.messageType() != null) {
+            LOG.info("{}: {}", message.messageType().name(), toHex(Arrays.copyOfRange(bytes, 3, bytes.length)));
+        }
+        if (message.messageType() == HUB_ATTACHED_IO) {
+            HubAttachedIOEvent msg = (HubAttachedIOEvent) message;
+            if (msg.event() == IOEvent.DETACHED) {
+                PeripheralDetachedEvent event = new PeripheralDetachedEvent(msg.port());
+                if (msg.port() == Port.C) {
+                    portC.event(event);
+                    portC = null;
+                }
+                if (msg.port() == Port.D) {
+                    portD.event(event);
+                    portD = null;
+                }
+                event(event);
+            }
+            if (msg.event() == IOEvent.ATTACHED) {
+                Peripheral newPeripheral = null;
+                if (msg.type() == EXTERNAL_MOTOR_WITH_TACHO) {
+                    newPeripheral = new Motor(this, msg.rawPort());
+                } else {
+                    LOG.warn("Unhandled peripheral: " + msg.type());
+                }
+                if (msg.port() == Port.C) {
+                    portC = newPeripheral;
+                }
+                if (msg.port() == Port.D) {
+                    portD = newPeripheral;
+                }
+                event(new PeripheralAttachedEvent(msg.port(), msg.type(), newPeripheral));
+            }
+            LOG.info("Event: {}", msg);
+        }
+        if (message.messageType() == PORT_VALUE_SINGLE) {
+            PortValueSingle msg = (PortValueSingle) message;
+            LOG.info("Value: {}", msg);
+        }
+    }
+
+    private void event(PeripheralEvent peripheralEvent) {
     }
 
     private static String toString(BluetoothDevice device) {
@@ -103,13 +162,22 @@ public class MoveHub implements AutoCloseable {
         return motorAB;
     }
 
+    public Peripheral portC() {
+        return portC;
+    }
+
+    public Peripheral portD() {
+        return portD;
+    }
+
     protected void writeValue(byte[] bytes) {
         LOG.info("Sending " + toHex(bytes));
         legoHubCharacteristics.writeValue(bytes);
     }
 
-    public void writeValue(LWPMessage message) {
+    public void writeValue(LWPDownstreamMessage message) {
         legoHubCharacteristics.writeValue(message.toBytes());
     }
+
 
 }

@@ -1,3 +1,3 @@
-rootProject.name = "ble"
-include("jlwp")
-include("jwlp-demo-app")
+rootProject.name = "lego-boost-over-tinyb"
+include("movehub")
+include("movehub-demo-app")

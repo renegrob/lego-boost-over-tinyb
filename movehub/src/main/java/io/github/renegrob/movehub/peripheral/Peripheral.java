@@ -1,6 +1,8 @@
 package io.github.renegrob.movehub.peripheral;
 
 import io.github.renegrob.movehub.MoveHub;
+import io.github.renegrob.movehub.peripheral.event.PeripheralDetachedEvent;
+import io.github.renegrob.movehub.peripheral.event.PeripheralEvent;
 
 public abstract class Peripheral {
 
@@ -21,5 +23,8 @@ public abstract class Peripheral {
 
     protected Peripheral(MoveHub hub) {
         this.hub = hub;
+    }
+
+    public void event(PeripheralEvent instance) {
     }
 }

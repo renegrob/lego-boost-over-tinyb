@@ -8,12 +8,12 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
     flatDir {
-        dirs("/usr/lib/x86_64-linux-gnu/../lib/java/")
+        dirs("/opt/tinyb/lib/java")
     }
 }
 
 dependencies {
-    implementation(project(":jlwp"))
+    implementation(project(":movehub"))
     implementation("intel-iot-devkit:tinyb:0.5.1")
     implementation("com.formdev:flatlaf:2.0-rc1")
     implementation("org.apache.logging.log4j:log4j-core:2.17.1")

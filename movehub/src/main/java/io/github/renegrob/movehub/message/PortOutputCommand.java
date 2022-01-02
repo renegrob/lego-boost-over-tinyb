@@ -5,7 +5,7 @@ import com.google.common.primitives.Bytes;
 /**
  * https://lego.github.io/lego-ble-wireless-protocol-docs/index.html#port-output-command
  */
-public class PortOutputCommand extends LWPMessage {
+public class PortOutputCommand extends LWPDownstreamMessage {
 
     private static final byte PORT_OUTPUT_COMMAND_MESSAGE_TYPE = (byte) 0x81;
 

@@ -8,7 +8,7 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
     flatDir {
-        dirs("/usr/lib/x86_64-linux-gnu/../lib/java/")
+        dirs("/opt/tinyb/lib/java")
     }
 }
 

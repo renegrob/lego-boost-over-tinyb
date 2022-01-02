@@ -20,5 +20,7 @@ public class Util {
         return (byte) uint8;
     }
 
-
+    public static int uint16(byte loByte, byte hiByte) {
+        return loByte + (hiByte << 8);
+    }
 }

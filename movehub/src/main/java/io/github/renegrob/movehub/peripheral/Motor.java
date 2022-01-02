@@ -1,6 +1,8 @@
 package io.github.renegrob.movehub.peripheral;
 
 import io.github.renegrob.movehub.MoveHub;
+import io.github.renegrob.movehub.message.PortInputFormatSetupSingle;
+import io.github.renegrob.movehub.message.Port;
 import io.github.renegrob.movehub.message.PortOutputCommand;
 
 import static io.github.renegrob.movehub.Util.b;
@@ -71,6 +73,18 @@ public class Motor extends Peripheral {
         checkSpeed(speed);
         checkPower(maxPower);
         hub.writeValue(new GotoAbsolutePositionCommand(port, absPos, speed, maxPower, endState, 0));
+    }
+
+    public void subscribeNotifications() {
+        hub.writeValue(new PortInputFormatSetupSingle(port()));
+    }
+
+    public Port port() {
+        return Port.of(port);
+    }
+
+    public String portName() {
+        return Port.of(port).name();
     }
 
     private static byte checkPower(int maxPower) {
